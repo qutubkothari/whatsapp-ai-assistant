@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 });
 
 // ✅ Webhook Route for Incoming WhatsApp Messages (Logs incoming data and confirms receipt)
-app.post("/webhook", async (req, res) => {
+app.post("/webhook", async (req, res, next) => {
     console.log("🔹 Incoming Webhook Data:", JSON.stringify(req.body, null, 2));
     res.status(200).send("Webhook received!");
 
@@ -69,8 +69,14 @@ app.post("/webhook", async (req, res) => {
 
         console.log("✅ Message sent via Maytapi:", sendMessageResponse.data);
     } catch (error) {
-        console.error("❌ Internal Server Error:", error.response?.data || error.message);
+        next(error);  // Pass errors to centralized error handler
     }
+});
+
+// ✅ Centralized Error Logging Middleware
+app.use((err, req, res, next) => {
+    console.error("🔥 Server Error:", err.stack);
+    res.status(500).send({ error: "Internal Server Error", details: err.message });
 });
 
 // ✅ Start Webhook Server (Ensure PORT is correct for Render)
