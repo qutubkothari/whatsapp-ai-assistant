@@ -19,14 +19,15 @@ app.get("/", (req, res) => {
     res.send("🚀 WhatsApp AI Assistant is running on Render!");
 });
 
-// ✅ Webhook Route for Incoming WhatsApp Messages
+// ✅ Webhook Route for Incoming WhatsApp Messages (Logs incoming data and confirms receipt)
 app.post("/webhook", async (req, res) => {
-    try {
-        console.log("🔹 Raw Webhook Data:", JSON.stringify(req.body, null, 2));
+    console.log("🔹 Incoming Webhook Data:", JSON.stringify(req.body, null, 2));
+    res.status(200).send("Webhook received!");
 
+    try {
         if (!req.body.message?.text || !req.body.user?.phone) {
             console.warn("ℹ️ Ignored non-message webhook or missing fields.");
-            return res.sendStatus(200);
+            return;
         }
 
         const body = req.body.message.text;
@@ -67,10 +68,8 @@ app.post("/webhook", async (req, res) => {
         );
 
         console.log("✅ Message sent via Maytapi:", sendMessageResponse.data);
-        res.sendStatus(200);
     } catch (error) {
         console.error("❌ Internal Server Error:", error.response?.data || error.message);
-        res.status(500).send("Internal Server Error");
     }
 });
 
